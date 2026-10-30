@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>
+   Athletics Portal Prototype
+  </title>
+  <style>
+   * { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: #222;
+  background: #f2f2f2;
+  line-height: 1.5;
+}
+[hidden] { display: none !important; }
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+button:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible {
+  outline: 3px solid #1766b5;
+  outline-offset: -3px;
+}
+.home {
+  max-width: 1000px;
+  min-height: 100vh;
+  margin: auto;
+  background: white;
+  border: 1px solid #555;
+}
+.header {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: 50px 50px 75px;
+}
+.tile {
+  width: 100%;
+  border: 0;
+  border-right: 1px solid #555;
+  border-bottom: 1px solid #555;
+  background: white;
+  color: #222;
+  padding: 10px;
+}
+.tile:hover { background: #edf3fa; }
+.title {
+  grid-column: 1 / 3;
+  grid-row: 1 / 3;
+  font-size: 1.6rem;
+}
+.right { border-right: 0; }
+.large {
+  display: block;
+  border-right: 0;
+  font-size: 1.3rem;
+}
+.announcements { min-height: 160px; }
+.calendar-link { min-height: 340px; }
+.calendar-link small {
+  display: block;
+  font-size: .9rem;
+  margin-top: 10px;
+}
+.company { min-height: 150px; border-bottom: 0; }
+.page { min-height: 100vh; background: white; padding: 24px; }
+.page-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+h1 { margin: 0; font-size: 1.6rem; }
+.action {
+  padding: 10px 16px;
+  border: 1px solid #284b70;
+  border-radius: 4px;
+  background: #284b70;
+  color: white;
+}
+.note { color: #555; }
+.switch { display: flex; gap: 8px; margin: 20px 0; }
+.switch button {
+  padding: 10px 24px;
+  border: 1px solid #284b70;
+  background: white;
+  color: #284b70;
+  border-radius: 4px;
+}
+.switch button[aria-pressed="true"] { background: #284b70; color: white; }
+.scroll { overflow-x: auto; }
+table {
+  width: 100%;
+  min-width: 850px;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+caption { text-align: left; font-weight: bold; padding-bottom: 12px; }
+th, td {
+  border: 1px solid #aaa;
+  padding: 10px;
+  text-align: left;
+  vertical-align: top;
+}
+th { background: #edf2f7; }
+.week td { height: 300px; }
+.month td { height: 120px; }
+.date { display: block; margin-bottom: 8px; font-weight: bold; }
+.empty { background: #f2f2f2; }
+.event {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px;
+  margin: 6px 0;
+  border: 1px solid #aac1dc;
+  border-left: 4px solid #2863a8;
+  border-radius: 3px;
+  background: #eaf2fc;
+  color: #173753;
+  font-size: .85rem;
+}
+.practice { border-left-color: #287348; background: #edf8f0; color: #214d35; }
+.event span { display: block; }
+.notifications { list-style: none; padding: 0; max-width: 850px; }
+.notifications li { padding: 18px 0; border-bottom: 1px solid #ccc; }
+.notifications h2 { font-size: 1.1rem; margin: 6px 0; }
+.notifications p { margin: 0; }
+time { color: #555; }
+form { display: grid; gap: 14px; max-width: 650px; }
+label { display: grid; gap: 5px; }
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #888;
+  border-radius: 4px;
+}
+textarea { min-height: 100px; }
+form button { justify-self: start; }
+#form-status { color: #214d35; }
+@media (max-width: 600px) {
+  .tile { font-size: .8rem; padding: 6px; }
+  .title, .large { font-size: 1.2rem; }
+  .page { padding: 16px; }
+}
+  </style>
+ </head>
+ <body>
+  <main class="home view" id="home">
+   <div class="header">
+    <button class="tile title" data-unavailable="">
+     Athletics Portal
+    </button>
+    <button class="tile" data-unavailable="">
+     Sign out
+    </button>
+    <button class="tile right" data-unavailable="">
+     Account Settings
+    </button>
+    <button class="tile" data-unavailable="">
+     Print Calendar
+    </button>
+    <button class="tile right" data-unavailable="">
+     Past Events
+    </button>
+    <button class="tile" data-page="notifications">
+     Notifications
+    </button>
+    <button class="tile" data-unavailable="">
+     Message
+    </button>
+    <button class="tile" data-page="add-event">
+     Add Event
+    </button>
+    <button class="tile right" data-unavailable="">
+     Delete Event
+    </button>
+   </div>
+   <button class="tile large announcements" data-unavailable="">
+    Group Announcements
+   </button>
+   <button class="tile large calendar-link" data-page="calendar">
+    Personal Calendar
+    <small>
+     Click to choose Week or Month
+    </small>
+   </button>
+   <button class="tile large company" data-unavailable="">
+    Company Info
+   </button>
+  </main>
+  <main class="page view" hidden="" id="calendar">
+   <header class="page-header">
+    <button class="action" data-page="home">
+     ← Home
+    </button>
+    <h1 tabindex="-1">
+     Personal Calendar
+    </h1>
+   </header>
+   <p class="note">
+    Mock athletic schedule. Choose Week or Month. Event details are not available in this prototype.
+   </p>
+   <div aria-label="Calendar view" class="switch" role="group">
+    <button aria-pressed="true" id="week-button">
+     Week
+    </button>
+    <button aria-pressed="false" id="month-button">
+     Month
+    </button>
+   </div>
+   <div class="scroll" id="week-calendar">
+    <table class="week">
+     <caption>
+      Week of November 2–8, 2026
+     </caption>
+     <thead>
+      <tr>
+       <th scope="col">
+        Mon, Nov 2
+       </th>
+       <th scope="col">
+        Tue, Nov 3
+       </th>
+       <th scope="col">
+        Wed, Nov 4
+       </th>
+       <th scope="col">
+        Thu, Nov 5
+       </th>
+       <th scope="col">
+        Fri, Nov 6
+       </th>
+       <th scope="col">
+        Sat, Nov 7
+       </th>
+       <th scope="col">
+        Sun, Nov 8
+       </th>
+      </tr>
+     </thead>
+     <tbody>
+      <tr>
+       <td>
+        <button class="event practice" data-unavailable="">
+         <strong>
+          Soccer Practice
+         </strong>
+         <span>
+          3:30–5:00 PM
+         </span>
+         <span>
+          North Field
+         </span>
+        </button>
+       </td>
+       <td>
+        <button class="event" data-unavailable="">
+         <strong>
+          Basketball vs. Riverside
+         </strong>
+         <span>
+          6:00–8:00 PM
+         </span>
+         <span>
+          Main Gym
+         </span>
+        </button>
+       </td>
+       <td>
+        <button class="event practice" data-unavailable="">
+         <strong>
+          Track Practice
+         </strong>
+         <span>
+          3:30–4:30 PM
+         </span>
+         <span>
+          Athletics Track
+         </span>
+        </button>
+        <button class="event practice" data-unavailable="">
+         <strong>
+          Basketball Practice
+         </strong>
+         <span>
+          5:00–6:30 PM
+         </span>
+         <span>
+          Main Gym
+         </span>
+        </button>
+       </td>
+       <td>
+        <button class="event" data-unavailable="">
+         <strong>
+          Soccer vs. Central
+         </strong>
+         <span>
+          4:00–6:00 PM
+         </span>
+         <span>
+          Home Stadium
+         </span>
+        </button>
+       </td>
+       <td>
+        <button class="event practice" data-unavailable="">
+         <strong>
+          Volleyball Practice
+         </strong>
+         <span>
+          3:00–4:30 PM
+         </span>
+         <span>
+          Auxiliary Gym
+         </span>
+        </button>
+       </td>
+       <td>
+        <button class="event" data-unavailable="">
+         <strong>
+          Cross-Country Meet
+         </strong>
+         <span>
+          9:00–11:30 AM
+         </span>
+         <span>
+          Community Park
+         </span>
+        </button>
+       </td>
+       <td>
+        No scheduled events
+       </td>
+      </tr>
+     </tbody>
+    </table>
+   </div>
+   <div class="scroll" hidden="" id="month-calendar">
+    <table class="month">
+     <caption>
+      November 2026
+     </caption>
+     <thead>
+      <tr>
+       <th scope="col">
+        Monday
+       </th>
+       <th scope="col">
+        Tuesday
+       </th>
+       <th scope="col">
+        Wednesday
+       </th>
+       <th scope="col">
+        Thursday
+       </th>
+       <th scope="col">
+        Friday
+       </th>
+       <th scope="col">
+        Saturday
+       </th>
+       <th scope="col">
+        Sunday
+       </th>
+      </tr>
+     </thead>
+     <tbody>
+      <tr>
+       <td class="empty">
+       </td>
+       <td class="empty">
+       </td>
+       <td class="empty">
+       </td>
+       <td class="empty">
+       </td>
+       <td class="empty">
+       </td>
+       <td class="empty">
+       </td>
+       <td>
+        <span class="date">
+         1
+        </span>
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <span class="date">
+         2
+        </span>
+        <button class="event practice" data-unavailable="">
+         <strong>
+          Soccer Practice
+         </strong>
+         <span>
+          3:30–5:00 PM
+         </span>
+         <span>
+          North Field
+         </span>
+        </button>
+       </td>
+       <td>
+        <span class="date">
+         3
+        </span>
+        <button class="event" data-unavailable="">
+         <strong>
+          Basketball vs. Riverside
+         </strong>
+         <span>
+          6:00–8:00 PM
+         </span>
+         <span>
+          Main Gym
+         </span>
+        </button>
+       </td>
+       <td>
+        <span class="date">
+         4
+        </span>
+        <button class="event practice" data-unavailable="">
+         <strong>
+          Track Practice
+         </strong>
+         <span>
+          3:30–4:30 PM
+         </span>
+         <span>
+          Athletics Track
+         </span>
+        </button>
+        <button class="event practice" data-unavailable="">
+         <strong>
+          Basketball Practice
+         </strong>
+         <span>
+          5:00–6:30 PM
+         </span>
+         <span>
+          Main Gym
+         </span>
+        </button>
+       </td>
+       <td>
+        <span class="date">
+         5
+        </span>
+        <button class="event" data-unavailable="">
+         <strong>
+          Soccer vs. Central
+         </strong>
+         <span>
+          4:00–6:00 PM
+         </span>
+         <span>
+          Home Stadium
+         </span>
+        </button>
+       </td>
+       <td>
+        <span class="date">
+         6
+        </span>
+        <button class="event practice" data-unavailable="">
+         <strong>
+          Volleyball Practice
+         </strong>
+         <span>
+          3:00–4:30 PM
+         </span>
+         <span>
+          Auxiliary Gym
+         </span>
+        </button>
+       </td>
+       <td>
+        <span class="date">
+         7
+        </span>
+        <button class="event" data-unavailable="">
+         <strong>
+          Cross-Country Meet
+         </strong>
+         <span>
+          9:00–11:30 AM
+         </span>
+         <span>
+          Community Park
+         </span>
+        </button>
+       </td>
+       <td>
+        <span class="date">
+         8
+        </span>
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <span class="date">
+         9
+        </span>
+       </td>
+       <td>
+        <span class="date">
+         10
+        </span>
+       </td>
+       <td>
+        <span class="date">
+         11
+        </span>
+       </td>
+       <td>
+        <span class="date">
+         12
+        </span>
+       </td>
+       <td>
+        <span class="date">
+         13
+        </span>
+       </td>
+       <td>
+        <span class="date">
+         14
+        </span>
+       </td>
+       <td>
+        <span class="date">
+         15
+        </span>
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <span class="date">
+         16
+        </span>
+       </td>
+       <td>
+        <span class="date">
+         17
+        </span>
+       </td>
+       <td>
+        <span class="date">
+         18
+        </span>
+       </td>
+       <td>
+        <span class="date">
+         19
+        </span>
+       </td>
+       <td>
+        <span class="date">
+         20
+        </span>
+       </td>
+       <td>
+        <span class="date">
+         21
+        </span>
+       </td>
+       <td>
+        <span class="date">
+         22
+        </span>
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <span class="date">
+         23
+        </span>
+       </td>
+       <td>
+        <span class="date">
+         24
+        </span>
+       </td>
+       <td>
+        <span class="date">
+         25
+        </span>
+       </td>
+       <td>
+        <span class="date">
+         26
+        </span>
+       </td>
+       <td>
+        <span class="date">
+         27
+        </span>
+       </td>
+       <td>
+        <span class="date">
+         28
+        </span>
+       </td>
+       <td>
+        <span class="date">
+         29
+        </span>
+       </td>
+      </tr>
+      <tr>
+       <td>
+        <span class="date">
+         30
+        </span>
+       </td>
+       <td class="empty">
+       </td>
+       <td class="empty">
+       </td>
+       <td class="empty">
+       </td>
+       <td class="empty">
+       </td>
+       <td class="empty">
+       </td>
+       <td class="empty">
+       </td>
+      </tr>
+     </tbody>
+    </table>
+   </div>
+  </main>
+  <main class="page view" hidden="" id="notifications">
+   <header class="page-header">
+    <button class="action" data-page="home">
+     ← Home
+    </button>
+    <h1 tabindex="-1">
+     Notifications
+    </h1>
+   </header>
+   <p class="note">
+    Mock notifications — newest to oldest.
+   </p>
+   <ol class="notifications">
+    <li>
+     <time datetime="2026-10-30T14:45">
+      October 30, 2026 · 2:45 PM
+     </time>
+     <h2>
+      Soccer practice location updated
+     </h2>
+     <p>
+      Monday's practice will take place at North Field.
+     </p>
+    </li>
+    <li>
+     <time datetime="2026-10-30T11:15">
+      October 30, 2026 · 11:15 AM
+     </time>
+     <h2>
+      Basketball game reminder
+     </h2>
+     <p>
+      The game against Riverside begins Tuesday at 6:00 PM.
+     </p>
+    </li>
+    <li>
+     <time datetime="2026-10-29T16:30">
+      October 29, 2026 · 4:30 PM
+     </time>
+     <h2>
+      Cross-country meet added
+     </h2>
+     <p>
+      A meet is scheduled for November 7 at Community Park.
+     </p>
+    </li>
+    <li>
+     <time datetime="2026-10-28T09:00">
+      October 28, 2026 · 9:00 AM
+     </time>
+     <h2>
+      November schedule available
+     </h2>
+     <p>
+      Review your personal calendar for upcoming events and practices.
+     </p>
+    </li>
+   </ol>
+  </main>
+  <main class="page view" hidden="" id="add-event">
+   <header class="page-header">
+    <button class="action" data-page="home">
+     ← Home
+    </button>
+    <h1 tabindex="-1">
+     Add Event
+    </h1>
+   </header>
+   <p class="note">
+    Demo form only. Nothing is saved or added to the calendar. Fields marked * are required.
+   </p>
+   <form id="event-form">
+    <label>
+     Event name *
+     <input name="title" required="" type="text"/>
+    </label>
+    <label>
+     Event type *
+     <select name="type" required="">
+      <option value="">
+       Choose a type
+      </option>
+      <option>
+       Practice
+      </option>
+      <option>
+       Game
+      </option>
+      <option>
+       Meet
+      </option>
+      <option>
+       Other
+      </option>
+     </select>
+    </label>
+    <label>
+     Date *
+     <input name="date" required="" type="date"/>
+    </label>
+    <label>
+     Start time *
+     <input name="start" required="" type="time"/>
+    </label>
+    <label>
+     End time *
+     <input name="end" required="" type="time"/>
+    </label>
+    <label>
+     Location *
+     <input name="location" required="" type="text"/>
+    </label>
+    <label>
+     Additional information
+     <textarea name="notes"></textarea>
+    </label>
+    <button class="action" type="submit">
+     Submit Demo Event
+    </button>
+   </form>
+   <p id="form-status" role="status">
+   </p>
+  </main>
+  <script>
+   // These "pages" share one file, so we just hide the ones we aren't using.
+let lastHomeButton;
+
+document.querySelectorAll('[data-page]').forEach(function (button) {
+  button.addEventListener('click', function () {
+    const pageId = button.dataset.page;
+
+    if (button.closest('#home')) {
+      lastHomeButton = button;
+    }
+
+    document.querySelectorAll('.view').forEach(function (page) {
+      page.hidden = page.id !== pageId;
+    });
+
+    if (pageId === 'calendar') {
+      changeCalendarView(true);
+    }
+
+    // Put keyboard focus back where it makes sense after switching pages.
+    if (pageId === 'home') {
+      if (lastHomeButton) {
+        lastHomeButton.focus();
+      }
+    } else {
+      document.querySelector('#' + pageId + ' h1').focus();
+    }
+
+    window.scrollTo(0, 0);
+  });
+});
+
+document.querySelectorAll('[data-unavailable]').forEach(function (button) {
+  button.addEventListener('click', function () {
+    alert("This feature isn't available in the prototype.");
+  });
+});
+
+function changeCalendarView(showWeek) {
+  document.getElementById('week-calendar').hidden = !showWeek;
+  document.getElementById('month-calendar').hidden = showWeek;
+  document.getElementById('week-button').setAttribute('aria-pressed', String(showWeek));
+  document.getElementById('month-button').setAttribute('aria-pressed', String(!showWeek));
+}
+
+document.getElementById('week-button').addEventListener('click', function () {
+  changeCalendarView(true);
+});
+
+document.getElementById('month-button').addEventListener('click', function () {
+  changeCalendarView(false);
+});
+
+document.getElementById('event-form').addEventListener('submit', function (event) {
+  // Skip the normal form submission so this demo stays on the page.
+  event.preventDefault();
+  document.getElementById('form-status').textContent =
+    'Demo submission received. No event was saved or added to the calendar.';
+});
+
+document.getElementById('event-form').addEventListener('input', function () {
+  document.getElementById('form-status').textContent = '';
+});
+  </script>
+ </body>
+</html>
